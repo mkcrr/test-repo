@@ -1,0 +1,185 @@
+
+
+##################################################
+### Gardiner Spillway Q vs Turbine Q 2011 
+
+# stringr can be used when need to calculate and concatenate new variables simultaneously
+
+# read file
+# cntrl + alt + i to insert chinks of code
+
+```{r}
+
+infile <- 'GardinerQ_SpillwayPower.csv'
+data1 <- read.table(
+  file = infile,
+  header = TRUE,
+  sep = ',',
+  stringsAsFactors = FALSE
+)
+
+names(data1)
+
+
+library(dplyr)
+library(stringr)
+library(ggplot2)
+
+
+```
+# plot spillway vs turbine outflows for 3 calibration years (2011-2013)
+# try plotting solid vs dotted lines of same colour for each year
+
+```{r}
+
+
+### maximum
+
+# make decade a factor so can be used as colour variable
+data1$Year <- as.factor(data1$Year)
+
+
+# check dates are formatted properly
+data1$Dates <- as.Date(data1$Dates, format="%d/%m/%Y")
+
+
+# data1$Dates <- as.numeric(data1$Dates, format="%d/%m/%Y")
+
+# check levels of factor
+# levels alone only works on vectors so specify df and which column
+levels(data1[,4])
+
+## have to manipulate dataframe so have type of withdrawal as a factor and Q as 
+## corresponding variable - try dplyr
+
+  # data2 <-data1 %>%
+  # group_by(Total_Q,Power_House,Spillway)
+
+# try melt
+library(reshape2)
+
+data2 <- data.frame(melt (data1, id=c("Dates","Month","Day","Year","Total_Q")))
+names(data2)
+data2$Dates
+
+print.data.frame(data2)
+
+# name new variable (outflow) and value (Q)
+data2$Outflow<- as.factor(data2$variable)
+levels(data2$Outflow)
+
+data2$Q <- as.numeric(data2$value)
+  
+# make day variable to plot by day of the year
+
+data2$dayoy <-as.numeric(format(data2$Dates, "%j"))
+names(data2)
+data2$dayoy
+
+# Plot Q by day of year, colour by year and lines by outflow type
+# still busy, add plots for turnover periods and stratification
+
+tiff(filename="Spillway_Powerhouse_Q_years.tiff", width=1000, height=600)
+
+ggplot()+
+  geom_line(data=data2, mapping = aes(x=dayoy, y=Q, colour= Year, linetype=Outflow))+
+  scale_x_continuous(breaks=seq(0,370,20))+
+  labs(y="Discharge (cms)")+
+labs(x="Day of Year")+
+theme(plot.title= element_text(hjust=0.5),panel.grid.major=element_blank(), 
+panel.grid.minor=element_blank(),panel.background=element_blank(),
+panel.border = element_rect(fill=NA,colour = "black"),
+axis.text.x=element_text(colour="black"),axis.text.y=element_text(colour="black")
+)
+
+
+
+```
+######## Spillway vs Turbine outflow Spring Turnover ########
+############################################################
+
+```{r}
+#### only plot April 15- May 31st (biggest interval = days 105-152)
+
+# make a new month/day variablew to use as x (make based on year 2000)
+
+data2$CommonDate <- as.Date(paste0("2000-", format(data2$Date, "%j")), "%Y-%j")
+
+# subset data2 dataframe
+
+sto <-data2[data2$dayoy > 104 & data2$dayoy < 153,]
+
+tiff(filename="Spillway_Powerhouse_Q_SpringTO.tiff", width=1000, height=600)
+
+ggplot()+
+  geom_line(data=sto, mapping = aes(x=CommonDate, y=Q, colour= Year, linetype=Outflow),size=1.2)+
+  labs(y="Discharge (cms)")+
+labs(x="Day of Year")+
+   scale_x_date(labels= function(x) format (x, "%d-%b"))+
+theme(plot.title= element_text(hjust=0.5),panel.grid.major=element_blank(), 
+panel.grid.minor=element_blank(),panel.background=element_blank(),
+panel.border = element_rect(fill=NA,colour = "black"),
+axis.text.x=element_text(colour="black"),axis.text.y=element_text(colour="black")
+)
+
+
+```
+
+######### Spillway vs Turbine outflow Fall Turnover ##########
+##############################################################
+
+```{r}
+#### only plot Sept 15- Oct 31st (biggest interval = days 258-305)
+
+# make a new month/day variablew to use as x (make based on year 2000)
+
+data2$CommonDate <- as.Date(paste0("2000-", format(data2$Date, "%j")), "%Y-%j")
+
+# subset data2 dataframe
+
+sto <-data2[data2$dayoy > 258 & data2$dayoy < 305,]
+
+tiff(filename="Spillway_Powerhouse_Q_FallTO.tiff", width=1000, height=600)
+
+ggplot()+
+  geom_line(data=sto, mapping = aes(x=CommonDate, y=Q, colour= Year, linetype=Outflow),size=1.2)+
+  labs(y="Discharge (cms)")+
+labs(x="Day of Year")+
+   scale_x_date(labels= function(x) format (x, "%d-%b"))+
+theme(plot.title= element_text(hjust=0.5),panel.grid.major=element_blank(), 
+panel.grid.minor=element_blank(),panel.background=element_blank(),
+panel.border = element_rect(fill=NA,colour = "black"),
+axis.text.x=element_text(colour="black"),axis.text.y=element_text(colour="black")
+)
+
+```
+######### Spillway vs Turbine outflow Summer Stratification ##########
+######################################################################
+
+```{r}
+
+#### only plot June 1- Aug 30 (biggest interval = days 258-305)
+
+# make a new month/day variablew to use as x (make based on year 2000)
+
+data2$CommonDate <- as.Date(paste0("2000-", format(data2$Date, "%j")), "%Y-%j")
+
+# subset data2 dataframe
+
+sto <-data2[data2$dayoy > 151 & data2$dayoy < 305,]
+
+tiff(filename="Spillway_Powerhouse_Q_SummerStrat.tiff", width=1000, height=600)
+
+ggplot()+
+  geom_line(data=sto, mapping = aes(x=CommonDate, y=Q, colour= Year, linetype=Outflow),size=1.2)+
+  labs(y="Discharge (cms)")+
+labs(x="Day of Year")+
+   scale_x_date(labels= function(x) format (x, "%d-%b"))+
+theme(plot.title= element_text(hjust=0.5),panel.grid.major=element_blank(), 
+panel.grid.minor=element_blank(),panel.background=element_blank(),
+panel.border = element_rect(fill=NA,colour = "black"),
+axis.text.x=element_text(colour="black"),axis.text.y=element_text(colour="black")
+)
+
+```
+
