@@ -60,7 +60,9 @@ library(reshape2)
 
 data2 <- data.frame(melt (data1, id=c("Dates","Month","Day","Year","Total_Q")))
 names(data2)
-data2$Dates
+head(data2, n=10)
+
+# data2spill <- data2[data2$variable == "Spillway",]
 
 print.data.frame(data2)
 
@@ -102,12 +104,17 @@ axis.text.x=element_text(colour="black"),axis.text.y=element_text(colour="black"
 #### only plot April 15- May 31st (biggest interval = days 105-152)
 
 # make a new month/day variablew to use as x (make based on year 2000)
+# not working properly....
 
 data2$CommonDate <- as.Date(paste0("2000-", format(data2$Date, "%j")), "%Y-%j")
+head(data2, n=10)
+tail(data2, n=10)
 
 # subset data2 dataframe
 
 sto <-data2[data2$dayoy > 104 & data2$dayoy < 153,]
+head(sto, n=10)
+tail(sto, n=10)
 
 tiff(filename="Spillway_Powerhouse_Q_SpringTO.tiff", width=1000, height=600)
 
@@ -116,6 +123,8 @@ ggplot()+
   labs(y="Discharge (cms)")+
 labs(x="Day of Year")+
    scale_x_date(labels= function(x) format (x, "%d-%b"))+
+  scale_y_continuous(breaks=seq(0,800,100))+
+    ggtitle("Spring Turnover Period")+
 theme(plot.title= element_text(hjust=0.5),panel.grid.major=element_blank(), 
 panel.grid.minor=element_blank(),panel.background=element_blank(),
 panel.border = element_rect(fill=NA,colour = "black"),
@@ -146,6 +155,8 @@ ggplot()+
   labs(y="Discharge (cms)")+
 labs(x="Day of Year")+
    scale_x_date(labels= function(x) format (x, "%d-%b"))+
+    scale_y_continuous(breaks=seq(0,800,100))+
+     ggtitle("Fall Turnover Period")+
 theme(plot.title= element_text(hjust=0.5),panel.grid.major=element_blank(), 
 panel.grid.minor=element_blank(),panel.background=element_blank(),
 panel.border = element_rect(fill=NA,colour = "black"),
@@ -175,6 +186,8 @@ ggplot()+
   labs(y="Discharge (cms)")+
 labs(x="Day of Year")+
    scale_x_date(labels= function(x) format (x, "%d-%b"))+
+    scale_y_continuous(breaks=seq(0,1700,200))+
+  ggtitle("Summer Stratification Period")+
 theme(plot.title= element_text(hjust=0.5),panel.grid.major=element_blank(), 
 panel.grid.minor=element_blank(),panel.background=element_blank(),
 panel.border = element_rect(fill=NA,colour = "black"),
